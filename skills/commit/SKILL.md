@@ -23,7 +23,7 @@ Group the changes into logical units. A logical unit is a self-contained change 
 3. **Present the plan.** Show the proposed commits: which files go into which commit, and the subject line for each. Done when the user approves the grouping and each proposed subject.
 
 4. **Stage and commit each group.** For each approved group:
-   - Stage the relevant files by name.
+   - Stage the relevant files by name — entire files with their final state, never partial hunks.
    - Draft the subject. Check the rules. Iterate until they pass.
    - Draft the body if needed. Bullets only.
    - Commit.
@@ -34,27 +34,6 @@ Group the changes into logical units. A logical unit is a self-contained change 
 
 If the project has pre-commit hooks, run them. If they fail, fix what's fixable and ask the user about the rest.
 
-## The subject
+## Message conventions
 
-Format: `<type>(<scope>): <description>`
-
-**Allowed types:** `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
-
-**Rules:**
-- Up to 72 characters.
-- Imperative mood ("add", not "added").
-- Legible to someone who has never opened this repo. Name the behaviour or the component in plain words. Symbols and function names go in the body.
-
-## The body
-
-Subject alone only when the diff is one change the subject fully states. Otherwise the body states every change — one tight line each — and only the non-obvious ones earn expansion. An expansion names:
-- a non-obvious why
-- a tradeoff taken
-- a system the change leans on
-
-Bullets only. The diff shows the details; the body is the change list, not the change explanation.
-
-## Where things live
-
-- The subject and body carry the change description — ticket numbers, issue references, and `.scratch` paths live in the trailers or commit metadata.
-- Trailers credit human collaborators only — add them when there are collaborators to credit.
+The subject and body follow the project's commit convention — see the project's `CONTRIBUTING.md` (typically at the repo root). If no `CONTRIBUTING.md` exists, follow standard Conventional Commits.
