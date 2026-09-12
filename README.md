@@ -2,6 +2,8 @@
 
 A small set of skills for planning and building software — from a one-line fix to a large feature. Each is a short instruction sheet that an AI agent (or a person) can follow. They share one vocabulary; this README explains the words so everyone — technical or not — reads them the same way.
 
+Based on [Matt Pocock's skills](https://github.com/mattpocock/skills) — simplified and adapted to match my own workflow.
+
 ## The pipeline
 
 Large pieces of work flow through five steps, in order, each leaving files under `.scratch/<feature>/` for the next to find:
