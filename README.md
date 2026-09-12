@@ -57,4 +57,4 @@ Some words already carry a precise meaning in the field, so the skills use them 
 
 ## The project's own words
 
-A project's own shared vocabulary lives in `CONTEXT.md` — a short glossary. Read it when you start; update it when a term gets pinned down (see `domain-modeling`).
+A project using these skills keeps its own glossary in `CONTEXT.md` (see `domain-modeling`).
