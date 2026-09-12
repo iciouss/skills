@@ -3,7 +3,7 @@
 # requires-python = ">=3.9"
 # dependencies = ["questionary"]
 # ///
-"""Interactively link/unlink skills into .claude/skills via symlinks or copies."""
+"""Interactively link/unlink skills into .agents/skills via symlinks or copies."""
 
 import re
 import shutil
@@ -14,7 +14,7 @@ import questionary
 from questionary import Choice, Style
 
 SKILLS_DIR = Path(__file__).resolve().parent / "skills"
-TARGET_DIR = Path("./.claude/skills")
+TARGET_DIR = Path("./.agents/skills")
 EXCLUDE: set[str] = set()
 
 
@@ -64,15 +64,6 @@ STYLE = Style([
 
 
 def main() -> None:
-    mode = questionary.select(
-        "How should skills be installed?",
-        choices=["link", "copy"],
-        style=STYLE,
-    ).ask()
-    if mode is None:
-        print("Cancelled. No changes made.")
-        return
-
     skills = available_skills()
     if not skills:
         print(f"No available skills found in {SKILLS_DIR}")
@@ -88,7 +79,7 @@ def main() -> None:
     ]
 
     question = questionary.checkbox(
-        f"Manage skills in .claude/skills/ ({mode})",
+        f"Manage skills in .agents/skills/",
         choices=choices,
         style=STYLE,
         instruction="(space: toggle item, a: toggle all, enter: confirm)",
@@ -96,8 +87,36 @@ def main() -> None:
     # Drop the "invert selection" binding — not useful here and not worth the keymap noise
     question.application.key_bindings.remove("i")
     selected = question.ask()
-
     if selected is None:
+        print("Cancelled. No changes made.")
+        return
+    if not selected:
+        confirm = questionary.confirm(
+            "No skills selected — remove/undo every skill installed by this wizard?",
+            default=False,
+            style=STYLE,
+        ).ask()
+        if not confirm:
+            print("Cancelled. No changes made.")
+            return
+        run_removal(skills)
+        return
+
+    mode = questionary.select(
+        "How should the selected skills be installed?",
+        choices=[
+            Choice(
+                title=[("class:whitetext", "link  (symlink into the repo, tracks source)")],
+                value="link",
+            ),
+            Choice(
+                title=[("class:whitetext", "copy  (independent copy, decoupled from source)")],
+                value="copy",
+            ),
+        ],
+        style=STYLE,
+    ).ask()
+    if mode is None:
         print("Cancelled. No changes made.")
         return
 
@@ -126,21 +145,36 @@ def main() -> None:
                 print(f"  ✔ Linked:   {name}")
             changed = True
         else:
-            if dest.is_symlink():
-                dest.unlink()
-                print(f"  ✘ Unlinked: {name}")
-                changed = True
-            elif dest.is_dir():
-                shutil.rmtree(dest)
-                print(f"  ✘ Removed:  {name}")
-                changed = True
-            elif dest.is_file():
-                dest.unlink()
-                print(f"  ✘ Removed:  {name}")
-                changed = True
+            changed = remove_skill(name, dest) or changed
 
     if not changed:
         print("No changes.")
+
+
+def run_removal(skills: list[str]) -> None:
+    """Remove ONLY skills the wizard manages (from SKILLS_DIR) — never anything
+    else living in TARGET_DIR, e.g. skills tracked in the target repo."""
+    changed = False
+    for name in skills:
+        changed = remove_skill(name, TARGET_DIR / name) or changed
+    if not changed:
+        print("Nothing installed by the wizard — no changes.")
+
+
+def remove_skill(name: str, dest: Path) -> bool:
+    if dest.is_symlink():
+        dest.unlink()
+        print(f"  ✘ Unlinked: {name}")
+        return True
+    if dest.is_dir():
+        shutil.rmtree(dest)
+        print(f"  ✘ Removed:  {name}")
+        return True
+    if dest.is_file():
+        dest.unlink()
+        print(f"  ✘ Removed:  {name}")
+        return True
+    return False
 
 
 if __name__ == "__main__":
